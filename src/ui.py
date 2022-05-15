@@ -315,14 +315,13 @@ class Ui_Form(object):
         if m == 0:
             QMessageBox.warning(None, "warning", "the length of pattern should not be zero")
             return
+        beyond_char = False
         for i in range(n):
             if T[i] not in stringmatch.table:
-                QMessageBox.warning(None, "warning", "the letter in the text is beyond which is supported")
-                return
+                beyond_char = True
         for i in range(m):
             if P[i] not in stringmatch.table:
-                QMessageBox.warning(None, "warning", "the letter in the pattern is beyond which is supported")
-                return
+                beyond_char = True
 
         import time
         start = time.time()
@@ -330,21 +329,36 @@ class Ui_Form(object):
         t_1 = time.time()
         s_2 = stringmatch.kmp_string_match(T, P)
         t_2 = time.time()
-        s_3 = stringmatch.bm_string_match(T, P)
-        t_3 = time.time()
+        if not beyond_char:
+            s_3 = stringmatch.bm_string_match(T, P)
+            t_3 = time.time()
         fail = False
-        for i in range(max(len(s_1), len(s_2), len(s_3))):
-            if s_1[i] == s_2[i] and s_1[i] == s_3[i]:
-                continue
-            else:
-                fail = True
-                print('error')
-        if not fail:
-            print('right')
+        if not beyond_char:
+            for i in range(max(len(s_1), len(s_2), len(s_3))):
+                if s_1[i] == s_2[i] and s_1[i] == s_3[i]:
+                    continue
+                else:
+                    fail = True
+                    print('error')
+            if not fail:
+                print('right')
+        else:
+            for i in range(max(len(s_1), len(s_2))):
+                if s_1[i] == s_2[i]:
+                    continue
+                else:
+                    fail = True
+                    print('error')
+            if not fail:
+                print('right')
         
         self.textBrowser_2.setText(f'{round((t_1 - start) * 1000, 5)} ms = {round(t_1 - start, 5)} s')
         self.textBrowser_3.setText(f'{round((t_2 - t_1) * 1000, 5)} ms = {round(t_2 - t_1, 5)} s')
-        self.textBrowser_4.setText(f'{round((t_3 - t_2) * 1000, 5)} ms = {round(t_3 - t_2, 5)} s')
+        if not beyond_char:
+            print('enter')
+            self.textBrowser_4.setText(f'{round((t_3 - t_2) * 1000, 5)} ms = {round(t_3 - t_2, 5)} s')
+        else:
+            self.textBrowser_4.setText(f'beyond char')
         self.textBrowser_6.setText(str(len(s_1)))
         self.textBrowser_7.setText(str(n))
         self.textBrowser_8.setText(str(m))
